@@ -12,7 +12,11 @@ test-results/
 # Gradle / Java
 backend/.gradle/
 backend/build/
+backend/data/
 *.class
+*.db
+*.mv.db
+*.trace.db
 
 # Editor / OS
 .vscode/*

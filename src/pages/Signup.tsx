@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.jpg";
 import type { Database } from "@/integrations/supabase/types";
 
+type AppRole = Database["public"]["Enums"]["app_role"];
 type AllowedRole = Exclude<AppRole, "admin" | "recruiter">;
 
 const roleLabels: Record<AllowedRole, string> = {

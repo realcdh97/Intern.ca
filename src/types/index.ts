@@ -10,6 +10,15 @@ export interface Job {
   salary: string;
 }
 
+export type ApplicationStage =
+  | "APPLIED"
+  | "SCREENING"
+  | "INTERVIEW"
+  | "OFFER"
+  | "HIRED"
+  | "REJECTED"
+  | "WITHDRAWN";
+
 export interface Application {
   id?: number;
   jobId: number;
@@ -17,8 +26,64 @@ export interface Application {
   candidateEmail: string;
   portfolioUrl: string;
   coverLetter: string;
+  /** Mirrors `stage`; kept for existing views that read a plain string. */
   status?: string;
   appliedAt?: string;
+
+  // ATS pipeline fields, populated by the backend.
+  stage?: ApplicationStage;
+  rating?: number | null;
+  matchScore?: number | null;
+  assignedTo?: string | null;
+  skills?: string;
+  resumeText?: string;
+  resumeUrl?: string;
+  rejectionReason?: string | null;
+  stageChangedAt?: string;
+  updatedAt?: string;
+}
+
+export interface StageDescriptor {
+  name: ApplicationStage;
+  label: string;
+  terminal: boolean;
+  active: boolean;
+}
+
+export interface ApplicationEvent {
+  id: number;
+  applicationId: number;
+  fromStage: ApplicationStage | null;
+  toStage: ApplicationStage;
+  actor: string;
+  note?: string | null;
+  occurredAt: string;
+}
+
+export interface ApplicationNote {
+  id: number;
+  applicationId: number;
+  author: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface PipelineFunnel {
+  jobId: number;
+  totalApplications: number;
+  byStage: Record<ApplicationStage, number>;
+  conversionRates: Record<ApplicationStage, number>;
+  strongMatches: number;
+  awaitingReview: number;
+  strongMatchThreshold: number;
+}
+
+export interface MatchBreakdown {
+  applicationId: number;
+  score: number;
+  strongMatch: boolean;
+  matched: string[];
+  missing: string[];
 }
 
 export interface StudentProfile {

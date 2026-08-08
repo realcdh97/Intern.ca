@@ -1,6 +1,12 @@
 import {
   Job,
   Application,
+  ApplicationEvent,
+  ApplicationNote,
+  ApplicationStage,
+  MatchBreakdown,
+  PipelineFunnel,
+  StageDescriptor,
   StudentProfile,
   Company,
   Event,
@@ -76,6 +82,57 @@ export const api = {
   },
   analytics: {
     getOverview: () => get<Record<string, unknown>>("/analytics/overview"),
+  },
+  ats: {
+    /** Stage columns to render, in pipeline order. */
+    stages: (): Promise<StageDescriptor[]> => get<StageDescriptor[]>("/ats/stages"),
+
+    // Per-job views
+    board: (jobId: number): Promise<Record<ApplicationStage, Application[]>> =>
+      get<Record<ApplicationStage, Application[]>>(`/ats/jobs/${jobId}/board`),
+    ranked: (jobId: number): Promise<Application[]> =>
+      get<Application[]>(`/ats/jobs/${jobId}/ranked`),
+    byStage: (jobId: number, stage: ApplicationStage): Promise<Application[]> =>
+      get<Application[]>(`/ats/jobs/${jobId}/stage/${stage}`),
+    funnel: (jobId: number): Promise<PipelineFunnel> =>
+      get<PipelineFunnel>(`/ats/jobs/${jobId}/funnel`),
+    rescore: (jobId: number): Promise<{ jobId: number; rescored: number }> =>
+      post<{ jobId: number; rescored: number }>(`/ats/jobs/${jobId}/rescore`, {}),
+
+    // Per-application views
+    getApplication: (id: number): Promise<Application> =>
+      get<Application>(`/ats/applications/${id}`),
+    timeline: (id: number): Promise<ApplicationEvent[]> =>
+      get<ApplicationEvent[]>(`/ats/applications/${id}/timeline`),
+    match: (id: number): Promise<MatchBreakdown> =>
+      get<MatchBreakdown>(`/ats/applications/${id}/match`),
+    forCandidate: (email: string): Promise<Application[]> =>
+      get<Application[]>(`/ats/candidates/${encodeURIComponent(email)}/applications`),
+
+    // Actions
+    moveStage: (
+      id: number,
+      stage: ApplicationStage,
+      actor: string,
+      note?: string
+    ): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/stage`, { stage, actor, note }),
+    advance: (id: number, actor: string, note?: string): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/advance`, { actor, note }),
+    reject: (id: number, actor: string, reason?: string): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/reject`, { actor, reason }),
+    withdraw: (id: number, actor: string, reason?: string): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/withdraw`, { actor, reason }),
+    rate: (id: number, rating: number, actor: string): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/rating`, { rating, actor }),
+    assign: (id: number, assignee: string, actor: string): Promise<Application> =>
+      post<Application>(`/ats/applications/${id}/assign`, { assignee, actor }),
+
+    // Notes
+    notes: (id: number): Promise<ApplicationNote[]> =>
+      get<ApplicationNote[]>(`/ats/applications/${id}/notes`),
+    addNote: (id: number, author: string, body: string): Promise<ApplicationNote> =>
+      post<ApplicationNote>(`/ats/applications/${id}/notes`, { author, body }),
   },
   research: {
     overview: () => get<Record<string, unknown>>("/research/overview"),
