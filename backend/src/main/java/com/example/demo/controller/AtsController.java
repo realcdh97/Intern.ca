@@ -143,6 +143,26 @@ public class AtsController {
         return ats.addNote(id, body.get("author"), body.get("body"));
     }
 
+    /**
+     * Bulk stage change for the applicant table's multi-select actions.
+     * Body: {"ids": [1,2,3], "stage": "REJECTED", "actor": "usr_1", "note": "..."}
+     */
+    @PostMapping("/applications/bulk/stage")
+    public Map<String, Object> bulkMoveStage(@RequestBody Map<String, Object> body) {
+        Object rawIds = body.get("ids");
+        if (!(rawIds instanceof List<?> list)) {
+            throw new IllegalArgumentException("'ids' must be an array of application ids");
+        }
+        List<Long> ids = list.stream()
+                .map(value -> Long.parseLong(String.valueOf(value)))
+                .toList();
+        return ats.bulkMoveStage(
+                ids,
+                ApplicationStage.from(String.valueOf(body.get("stage"))),
+                body.get("actor") == null ? null : String.valueOf(body.get("actor")),
+                body.get("note") == null ? null : String.valueOf(body.get("note")));
+    }
+
     // --- Error mapping ------------------------------------------------------
 
     @ExceptionHandler(NoSuchElementException.class)

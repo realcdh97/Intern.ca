@@ -149,3 +149,11 @@ export interface Message {
   read?: boolean;
   sentAt?: string;
 }
+
+export interface BulkStageResult {
+  stage: ApplicationStage;
+  movedCount: number;
+  moved: number[];
+  skippedCount: number;
+  skipped: { id: string; reason: string }[];
+}

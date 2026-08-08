@@ -155,6 +155,42 @@ public class AtsService {
         return saved;
     }
 
+    /**
+     * Moves many applications at once, as the applicant table's bulk actions do.
+     *
+     * <p>Partial success is the point: selecting a page of candidates and
+     * rejecting them should not fail wholesale because one was already rejected.
+     * Each id is reported as moved or skipped-with-a-reason.
+     */
+    @Transactional
+    public Map<String, Object> bulkMoveStage(List<Long> applicationIds, ApplicationStage target,
+                                             String actor, String note) {
+        List<Long> moved = new ArrayList<>();
+        List<Map<String, String>> skipped = new ArrayList<>();
+
+        for (Long id : applicationIds == null ? List.<Long>of() : applicationIds) {
+            try {
+                moveStage(id, target, actor, note);
+                if (target == ApplicationStage.REJECTED && note != null) {
+                    Application application = require(id);
+                    application.setRejectionReason(note);
+                    applications.save(application);
+                }
+                moved.add(id);
+            } catch (InvalidTransitionException | NoSuchElementException e) {
+                skipped.add(Map.of("id", String.valueOf(id), "reason", e.getMessage()));
+            }
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("stage", target.name());
+        result.put("movedCount", moved.size());
+        result.put("moved", moved);
+        result.put("skippedCount", skipped.size());
+        result.put("skipped", skipped);
+        return result;
+    }
+
     @Transactional
     public Application assign(Long applicationId, String assignee, String actor) {
         Application application = require(applicationId);

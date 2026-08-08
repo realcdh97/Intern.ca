@@ -209,6 +209,54 @@ class AtsServiceTest {
     }
 
     @Test
+    void bulkMoveAppliesToEveryValidApplication() {
+        Application ada = apply("Ada", "react");
+        Application grace = apply("Grace", "cobol");
+
+        Map<String, Object> result = ats.bulkMoveStage(
+                List.of(ada.getId(), grace.getId()), ApplicationStage.SCREENING, "usr_1", "batch screen");
+
+        assertEquals(2, result.get("movedCount"));
+        assertEquals(0, result.get("skippedCount"));
+        assertEquals(ApplicationStage.SCREENING, ats.get(ada.getId()).getStage());
+        assertEquals(ApplicationStage.SCREENING, ats.get(grace.getId()).getStage());
+    }
+
+    @Test
+    void bulkMoveSkipsInvalidOnesAndStillCommitsTheRest() {
+        Application ada = apply("Ada", "react");
+        Application grace = apply("Grace", "cobol");
+        ats.reject(grace.getId(), "usr_1", "no");
+
+        // Grace is terminal and 9999 does not exist; Ada should still move.
+        Map<String, Object> result = ats.bulkMoveStage(
+                List.of(ada.getId(), grace.getId(), 9_999_999L),
+                ApplicationStage.SCREENING, "usr_1", null);
+
+        assertEquals(1, result.get("movedCount"));
+        assertEquals(2, result.get("skippedCount"));
+        assertEquals(ApplicationStage.SCREENING, ats.get(ada.getId()).getStage(),
+                "a partial failure must not roll back the successful moves");
+        assertEquals(ApplicationStage.REJECTED, ats.get(grace.getId()).getStage());
+    }
+
+    @Test
+    void bulkRejectRecordsTheReasonOnEachCandidate() {
+        Application ada = apply("Ada", "react");
+
+        ats.bulkMoveStage(List.of(ada.getId()), ApplicationStage.REJECTED, "usr_1", "role closed");
+
+        assertEquals("role closed", ats.get(ada.getId()).getRejectionReason());
+    }
+
+    @Test
+    void bulkMoveToleratesAnEmptySelection() {
+        Map<String, Object> result = ats.bulkMoveStage(List.of(), ApplicationStage.SCREENING, "usr_1", null);
+        assertEquals(0, result.get("movedCount"));
+        assertEquals(0, result.get("skippedCount"));
+    }
+
+    @Test
     void candidateCanSeeEveryApplicationTheySubmitted() {
         apply("Ada", "react");
         assertEquals(1, ats.forCandidate("ada@example.com").size());

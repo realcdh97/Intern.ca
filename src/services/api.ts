@@ -4,6 +4,7 @@ import {
   ApplicationEvent,
   ApplicationNote,
   ApplicationStage,
+  BulkStageResult,
   MatchBreakdown,
   PipelineFunnel,
   StageDescriptor,
@@ -127,6 +128,15 @@ export const api = {
       post<Application>(`/ats/applications/${id}/rating`, { rating, actor }),
     assign: (id: number, assignee: string, actor: string): Promise<Application> =>
       post<Application>(`/ats/applications/${id}/assign`, { assignee, actor }),
+
+    /** Bulk stage change; reports which ids moved and which were skipped. */
+    bulkMoveStage: (
+      ids: number[],
+      stage: ApplicationStage,
+      actor: string,
+      note?: string
+    ): Promise<BulkStageResult> =>
+      post<BulkStageResult>("/ats/applications/bulk/stage", { ids, stage, actor, note }),
 
     // Notes
     notes: (id: number): Promise<ApplicationNote[]> =>
