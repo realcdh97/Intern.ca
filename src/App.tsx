@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Jobs from "./pages/Jobs";
 import PostJob from "./pages/PostJob";
 import EmployerDashboard from "./pages/EmployerDashboard";
+import ApplicantPipeline from "./pages/ApplicantPipeline";
 import UniversityDashboard from "./pages/UniversityDashboard";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = () => (
                   element={
                     <ProtectedRoute allowedRoles={["company", "admin"]}>
                       <EmployerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/jobs/:jobId/pipeline"
+                  element={
+                    <ProtectedRoute allowedRoles={["company", "admin"]}>
+                      <ApplicantPipeline />
                     </ProtectedRoute>
                   }
                 />

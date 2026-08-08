@@ -4,26 +4,31 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/** A free-form comment left on a candidate by a member of the hiring team. */
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Application {
+public class ApplicationNote {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private Long jobId;
-    private String candidateName;
-    private String candidateEmail;
-    private String portfolioUrl;
-    private String coverLetter;
-    private String status; // e.g. PENDING, REVIEWED, REJECTED
-    private LocalDateTime appliedAt;
+
+    private Long applicationId;
+
+    /** Supabase user id of the note's author. */
+    private String author;
+
+    @Lob
+    private String body;
+
+    private LocalDateTime createdAt;
 }

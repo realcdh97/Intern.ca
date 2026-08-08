@@ -5,6 +5,7 @@ import { Job, Application } from "@/types";
 import { api } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import JobPipelineSummary from "@/components/ats/JobPipelineSummary";
 
 const EmployerDashboard = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -82,6 +83,8 @@ const EmployerDashboard = () => {
                   <h3 className="font-medium text-lg">Showing applications for: {selectedJob.title}</h3>
                   <Badge variant="secondary">{applications.length} Candidates</Badge>
                 </div>
+
+                <JobPipelineSummary job={selectedJob} />
 
                 {loadingApps ? (
                   <p className="text-muted-foreground">Loading applications...</p>
